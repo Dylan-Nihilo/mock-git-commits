@@ -74,8 +74,12 @@ export async function POST(request: NextRequest) {
         await execAsync(`cd "${mockRepoPath}" && git config user.name "${authorNameValue}"`);
         await execAsync(`cd "${mockRepoPath}" && git config user.email "${authorEmailValue}"`);
 
-        // 阶段2: 创建提交
+        // 阶段2: 创建提交（只使用一个文件，更优雅）
         let currentCommit = 0;
+        const commitFile = 'contributions.md';
+
+        // 创建初始文件
+        await execAsync(`cd "${mockRepoPath}" && echo "# Contributions\\n\\nThis repository tracks contribution history." > "${commitFile}"`);
 
         for (const contribution of contributions) {
           const date = new Date(contribution.date);
@@ -91,9 +95,9 @@ export async function POST(request: NextRequest) {
 
             const commitMessage = COMMIT_MESSAGES[Math.floor(Math.random() * COMMIT_MESSAGES.length)];
             const commitNumber = Math.floor(Math.random() * 1000);
-            const fileName = `commit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.md`;
 
             try {
+              // 修改同一个文件而不是创建新文件
               const command = `cd "${mockRepoPath}" && \
                 export GIT_AUTHOR_DATE="${commitDateString}" && \
                 export GIT_COMMITTER_DATE="${commitDateString}" && \
@@ -101,9 +105,8 @@ export async function POST(request: NextRequest) {
                 export GIT_AUTHOR_EMAIL="${authorEmailValue}" && \
                 export GIT_COMMITTER_NAME="${authorNameValue}" && \
                 export GIT_COMMITTER_EMAIL="${authorEmailValue}" && \
-                echo "# ${commitMessage} #${commitNumber}" > "${fileName}" && \
-                echo "Created: ${commitDateString}" >> "${fileName}" && \
-                git add "${fileName}" && \
+                echo "${commitDateString} - ${commitMessage} #${commitNumber}" >> "${commitFile}" && \
+                git add "${commitFile}" && \
                 git commit -m "${commitMessage} #${commitNumber}"`;
 
               await execAsync(command);

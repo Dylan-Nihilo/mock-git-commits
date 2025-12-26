@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mock git commits
+/.mock-git-commits/
+
+# logs
+dev.log
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,118 @@
+{
+  "common": {
+    "appName": "GitGen",
+    "author": "Dylan"
+  },
+  "nav": {
+    "back": "返回",
+    "exportJson": "导出JSON",
+    "language": "语言"
+  },
+  "landing": {
+    "title": "生成模拟 GitHub",
+    "subtitle": "贡献图",
+    "description": "创建逼真的GitHub贡献图，带有自然的分布模式。适合测试、演示或纯粹为了好玩。",
+    "startGenerating": "开始生成",
+    "liveDemo": "实时演示",
+    "tryItFree": "免费试用",
+    "features": {
+      "customDateRange": {
+        "title": "自定义日期范围",
+        "description": "选择任何日期范围来生成你的贡献图"
+      },
+      "realisticPatterns": {
+        "title": "逼真模式",
+        "description": "带有可配置范围的自然提交分布"
+      },
+      "privacyFirst": {
+        "title": "隐私优先",
+        "description": "所有数据都保留在你的浏览器中 - 不会发送到服务器"
+      }
+    },
+    "readyToStart": "准备好开始了吗？",
+    "generateFirstGraph": "在几秒钟内生成你的第一个贡献图",
+    "launchGenerator": "启动生成器"
+  },
+  "generator": {
+    "title": "贡献生成器",
+    "description": "创建逼真的GitHub贡献模式和自然分布",
+    "preview": "预览",
+    "totalCommits": "总提交数",
+    "generate": "生成",
+    "generating": "生成中...",
+    "regenerate": "重新生成",
+    "less": "少",
+    "more": "多",
+    "selectDate": {
+      "title": "选择日期",
+      "description": "点击贡献图中的任意单元格查看详细的提交信息"
+    },
+    "noCommits": {
+      "title": "无提交",
+      "description": "这一天没有提交"
+    },
+    "selectedDateDetails": {
+      "title": "选中日期详情"
+    },
+    "commits": {
+      "count": "次提交",
+      "day": "日",
+      "date": "日期"
+    },
+    "settings": {
+      "advanced": {
+        "show": "高级设置",
+        "hide": "隐藏高级设置"
+      },
+      "dateRange": {
+        "title": "日期范围",
+        "startDate": "开始日期",
+        "endDate": "结束日期"
+      },
+      "commitSettings": {
+        "title": "提交设置",
+        "minCommits": "最小提交数/天",
+        "maxCommits": "最大提交数/天"
+      },
+      "generationMode": {
+        "title": "生成模式",
+        "conservative": {
+          "title": "保守",
+          "description": "只在没有现有贡献的日期生成提交。避免叠加。",
+          "selected": "已选择"
+        },
+        "normal": {
+          "title": "正常",
+          "description": "不管是否有现有贡献都生成提交。可能会与当前活动叠加。",
+          "selected": "已选择"
+        },
+        "aggressive": {
+          "title": "激进",
+          "description": "不管现有情况在所有日期生成提交。最大化贡献活动。",
+          "selected": "已选择"
+        },
+        "note": "注意：你的GitHub个人资料统计所有公开仓库的提交。如果你在某天已有提交，它们会加在一起。"
+      },
+      "gitConfig": {
+        "title": "Git配置",
+        "authorName": "作者名称",
+        "authorEmail": "作者邮箱",
+        "repoName": "仓库名称",
+        "githubUrl": "GitHub URL（可选）",
+        "githubUrlPlaceholder": "https://github.com/username/repo.git",
+        "githubUrlHelp": "留空则仅创建本地仓库",
+        "createGitCommits": "创建Git提交",
+        "creating": "创建中..."
+      }
+    },
+    "alerts": {
+      "startDateError": "开始日期必须在结束日期之前",
+      "minMaxError": "最小提交数必须小于或等于最大提交数"
+    },
+    "footer": {
+      "builtWith": "使用Next.js、React和Tailwind CSS构建",
+      "createdBy": "创建者",
+      "githubUrl": "https://github.com/Dylan-Nihilo"
+    }
+  }
+}

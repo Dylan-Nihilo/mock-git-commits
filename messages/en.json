@@ -1,0 +1,118 @@
+{
+  "common": {
+    "appName": "GitGen",
+    "author": "Dylan"
+  },
+  "nav": {
+    "back": "Back",
+    "exportJson": "Export JSON",
+    "language": "Language"
+  },
+  "landing": {
+    "title": "Generate Mock GitHub",
+    "subtitle": "Contributions",
+    "description": "Create realistic GitHub contribution graphs with natural patterns. Perfect for testing, demonstrations, or just for fun.",
+    "startGenerating": "Start Generating",
+    "liveDemo": "Live Demo",
+    "tryItFree": "Try It Free",
+    "features": {
+      "customDateRange": {
+        "title": "Custom Date Range",
+        "description": "Select any date range to generate your contribution graph"
+      },
+      "realisticPatterns": {
+        "title": "Realistic Patterns",
+        "description": "Natural commit distribution with configurable ranges"
+      },
+      "privacyFirst": {
+        "title": "Privacy First",
+        "description": "All data stays in your browser - nothing is sent to servers"
+      }
+    },
+    "readyToStart": "Ready to Get Started?",
+    "generateFirstGraph": "Generate your first contribution graph in seconds",
+    "launchGenerator": "Launch Generator"
+  },
+  "generator": {
+    "title": "Contribution Generator",
+    "description": "Create realistic GitHub contribution patterns with natural distribution",
+    "preview": "Preview",
+    "totalCommits": "total commits",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "regenerate": "Regenerate",
+    "less": "Less",
+    "more": "More",
+    "selectDate": {
+      "title": "Select a Date",
+      "description": "Click on any cell in contribution graph to view detailed commit information"
+    },
+    "noCommits": {
+      "title": "No Commits",
+      "description": "There are no commits on this date"
+    },
+    "selectedDateDetails": {
+      "title": "Selected Date Details"
+    },
+    "commits": {
+      "count": "commits",
+      "day": "Day",
+      "date": "Date"
+    },
+    "settings": {
+      "advanced": {
+        "show": "Advanced",
+        "hide": "Hide"
+      },
+      "dateRange": {
+        "title": "Date Range",
+        "startDate": "Start Date",
+        "endDate": "End Date"
+      },
+      "commitSettings": {
+        "title": "Commit Settings",
+        "minCommits": "Minimum Commits / Day",
+        "maxCommits": "Maximum Commits / Day"
+      },
+      "generationMode": {
+        "title": "Mode",
+        "conservative": {
+          "title": "Conservative",
+          "description": "Only generate commits on dates with no existing contributions. Avoids stacking.",
+          "selected": "Selected"
+        },
+        "normal": {
+          "title": "Normal",
+          "description": "Generate commits regardless of existing contributions. May stack with your current activity.",
+          "selected": "Selected"
+        },
+        "aggressive": {
+          "title": "Aggressive",
+          "description": "Generate commits on all dates regardless. Maximizes contribution activity.",
+          "selected": "Selected"
+        },
+        "note": "Note: Your GitHub Profile counts commits from all public repositories. If you have existing commits on a date, they will be added together."
+      },
+      "gitConfig": {
+        "title": "Git Configuration",
+        "authorName": "Author Name",
+        "authorEmail": "Author Email",
+        "repoName": "Repository Name",
+        "githubUrl": "GitHub URL (Optional)",
+        "githubUrlPlaceholder": "https://github.com/username/repo.git",
+        "githubUrlHelp": "Leave empty to create local repository only",
+        "createGitCommits": "Create Git Commits",
+        "creating": "Creating..."
+      }
+    },
+    "alerts": {
+      "startDateError": "Start date must be before end date",
+      "minMaxError": "Min commits must be less than or equal to max commits"
+    },
+    "footer": {
+      "builtWith": "Built with Next.js, React, and Tailwind CSS",
+      "createdBy": "Created by",
+      "githubUrl": "https://github.com/Dylan-Nihilo"
+    }
+  }
+}

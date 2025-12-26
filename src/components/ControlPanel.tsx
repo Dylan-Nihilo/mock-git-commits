@@ -25,6 +25,8 @@ interface ControlPanelProps {
   authorName?: string;
   authorEmail?: string;
   generationMode?: 'conservative' | 'normal' | 'aggressive';
+  pushMode?: 'remote' | 'branch';
+  branchName?: string;
   onStartDateChange: (value: string) => void;
   onEndDateChange: (value: string) => void;
   onMinCommitsChange: (value: number) => void;
@@ -34,6 +36,8 @@ interface ControlPanelProps {
   onAuthorNameChange?: (value: string) => void;
   onAuthorEmailChange?: (value: string) => void;
   onGenerationModeChange?: (value: 'conservative' | 'normal' | 'aggressive') => void;
+  onPushModeChange?: (value: 'remote' | 'branch') => void;
+  onBranchNameChange?: (value: string) => void;
   onGenerate: () => void;
   onCreateGitCommits?: () => void;
   isCreatingGitCommits?: boolean;
@@ -50,6 +54,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   authorName = 'Dylan',
   authorEmail = 'dylan@example.com',
   generationMode = 'normal',
+  pushMode = 'remote',
+  branchName = 'contributions',
   onStartDateChange,
   onEndDateChange,
   onMinCommitsChange,
@@ -59,6 +65,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onAuthorNameChange,
   onAuthorEmailChange,
   onGenerationModeChange,
+  onPushModeChange,
+  onBranchNameChange,
   onGenerate,
   onCreateGitCommits,
   isCreatingGitCommits = false,
@@ -204,6 +212,36 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 ))}
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-500 block">{currentLocale === 'zh' ? '推送模式' : 'Push Mode'}</Label>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => onPushModeChange?.('remote')}
+                  className={`flex-1 px-2 py-1.5 text-[10px] rounded ${pushMode === 'remote' ? 'bg-white text-black' : 'bg-gray-900 text-gray-400'}`}
+                >
+                  {currentLocale === 'zh' ? '远程仓库' : 'Remote'}
+                </button>
+                <button
+                  onClick={() => onPushModeChange?.('branch')}
+                  className={`flex-1 px-2 py-1.5 text-[10px] rounded ${pushMode === 'branch' ? 'bg-white text-black' : 'bg-gray-900 text-gray-400'}`}
+                >
+                  {currentLocale === 'zh' ? '本地分支' : 'Branch'}
+                </button>
+              </div>
+            </div>
+
+            {pushMode === 'branch' && (
+              <div className="space-y-2">
+                <Label className="text-xs text-gray-500 block">{currentLocale === 'zh' ? '分支名' : 'Branch'}</Label>
+                <Input
+                  type="text"
+                  value={branchName}
+                  onChange={(e) => onBranchNameChange?.(e.target.value)}
+                  className="bg-gray-900 border-gray-800 text-white text-xs h-8"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label className="text-xs text-gray-500 block">{t('settings.gitConfig.authorName')}</Label>

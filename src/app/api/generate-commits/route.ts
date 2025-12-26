@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { existsSync, mkdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 
 const execAsync = promisify(exec);
@@ -30,6 +30,50 @@ const COMMIT_MESSAGES = [
   'Add comments', 'Update dependencies', 'Add error handling',
 ];
 
+function formatGitTimestamp(date: Date): string {
+  const timestamp = Math.floor(date.getTime() / 1000);
+  const timezoneOffset = date.getTimezoneOffset();
+  const hours = Math.abs(Math.floor(timezoneOffset / 60));
+  const minutes = Math.abs(timezoneOffset % 60);
+  const sign = timezoneOffset <= 0 ? '+' : '-';
+  const timezone = `${sign}${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
+  return `${timestamp} ${timezone}`;
+}
+
+function generateFastImportStream(
+  contributions: Array<{ date: string; count: number }>,
+  authorName: string,
+  authorEmail: string
+): string {
+  let stream = '';
+  let fileContent = '# Contributions\n\nThis repository tracks contribution history.\n';
+
+  for (const contribution of contributions) {
+    const date = new Date(contribution.date);
+
+    for (let i = 0; i < contribution.count; i++) {
+      const commitDate = new Date(date);
+      commitDate.setHours(Math.floor(Math.random() * 24));
+      commitDate.setMinutes(Math.floor(Math.random() * 60));
+      const commitDateString = formatGitTimestamp(commitDate);
+      const commitMessage = COMMIT_MESSAGES[Math.floor(Math.random() * COMMIT_MESSAGES.length)];
+      const commitNumber = Math.floor(Math.random() * 1000);
+
+      const entry = `${commitDate.toISOString()} - ${commitMessage} #${commitNumber}\n`;
+      fileContent += entry;
+
+      stream += `commit refs/heads/main\n`;
+      stream += `author ${authorName} <${authorEmail}> ${commitDateString}\n`;
+      stream += `committer ${authorName} <${authorEmail}> ${commitDateString}\n`;
+      stream += `data ${commitMessage.length}\n${commitMessage}\n`;
+      stream += `M 100644 inline contributions.md\n`;
+      stream += `data ${fileContent.length}\n${fileContent}\n`;
+    }
+  }
+
+  return stream;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { contributions, authorName, authorEmail, repoName, gitRemoteUrl, generationMode } = body;
@@ -51,6 +95,8 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(msg)}\n\n`));
       };
 
+      const fastImportFile = join(mockRepoPath, 'fast-import.data');
+
       try {
         if (!contributions || !Array.isArray(contributions)) {
           send({ type: 'error', message: 'Invalid contributions data' });
@@ -58,82 +104,36 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // 阶段1: 初始化仓库
         send({ type: 'progress', current: 0, total: totalCommits, message: 'Initializing repository...' });
 
         if (existsSync(mockRepoPath)) {
           rmSync(mockRepoPath, { recursive: true, force: true });
         }
         mkdirSync(mockRepoPath, { recursive: true });
+
         await execAsync(`cd "${mockRepoPath}" && git init`);
 
         if (gitRemoteUrl) {
           await execAsync(`cd "${mockRepoPath}" && git remote add origin "${gitRemoteUrl}"`);
         }
 
-        await execAsync(`cd "${mockRepoPath}" && git config user.name "${authorNameValue}"`);
-        await execAsync(`cd "${mockRepoPath}" && git config user.email "${authorEmailValue}"`);
+        send({ type: 'progress', current: 0, total: totalCommits, message: 'Generating commits...' });
 
-        // 阶段2: 创建提交（只使用一个文件，更优雅）
-        let currentCommit = 0;
-        const commitFile = 'contributions.md';
+        const fastImportData = generateFastImportStream(contributions, authorNameValue, authorEmailValue);
+        writeFileSync(fastImportFile, fastImportData, 'utf8');
 
-        // 创建初始文件
-        await execAsync(`cd "${mockRepoPath}" && echo "# Contributions\\n\\nThis repository tracks contribution history." > "${commitFile}"`);
+        send({ type: 'progress', current: totalCommits, total: totalCommits, message: 'Importing commits...' });
 
-        for (const contribution of contributions) {
-          const date = new Date(contribution.date);
-          const count = contribution.count;
+        await execAsync(`cd "${mockRepoPath}" && git fast-import < "${fastImportFile}"`);
 
-          for (let i = 0; i < count; i++) {
-            currentCommit++;
+        unlinkSync(fastImportFile);
 
-            const commitDate = new Date(date);
-            commitDate.setHours(Math.floor(Math.random() * 24));
-            commitDate.setMinutes(Math.floor(Math.random() * 60));
-            const commitDateString = commitDate.toISOString();
-
-            const commitMessage = COMMIT_MESSAGES[Math.floor(Math.random() * COMMIT_MESSAGES.length)];
-            const commitNumber = Math.floor(Math.random() * 1000);
-
-            try {
-              // 修改同一个文件而不是创建新文件
-              const command = `cd "${mockRepoPath}" && \
-                export GIT_AUTHOR_DATE="${commitDateString}" && \
-                export GIT_COMMITTER_DATE="${commitDateString}" && \
-                export GIT_AUTHOR_NAME="${authorNameValue}" && \
-                export GIT_AUTHOR_EMAIL="${authorEmailValue}" && \
-                export GIT_COMMITTER_NAME="${authorNameValue}" && \
-                export GIT_COMMITTER_EMAIL="${authorEmailValue}" && \
-                echo "${commitDateString} - ${commitMessage} #${commitNumber}" >> "${commitFile}" && \
-                git add "${commitFile}" && \
-                git commit -m "${commitMessage} #${commitNumber}"`;
-
-              await execAsync(command);
-
-              // 每5个提交或最后一个提交时发送进度
-              if (currentCommit % 5 === 0 || currentCommit === totalCommits) {
-                send({
-                  type: 'progress',
-                  current: currentCommit,
-                  total: totalCommits,
-                  message: `Creating commits... (${currentCommit}/${totalCommits})`
-                });
-              }
-            } catch (error) {
-              console.error('Error creating commit:', error);
-            }
-          }
-        }
-
-        // 阶段3: 推送到远程
         let pushSuccess = false;
         let pushError = '';
 
         if (gitRemoteUrl) {
           send({ type: 'progress', current: totalCommits, total: totalCommits, message: 'Pushing to remote...' });
           try {
-            await execAsync(`cd "${mockRepoPath}" && git branch -M main`);
             await execAsync(`cd "${mockRepoPath}" && git push -u origin main --force`);
             pushSuccess = true;
           } catch (error) {
@@ -141,25 +141,24 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // 构建完成消息
         const modeInfo = `Generation Mode: ${generationModeValue.toUpperCase()}\n${getModeDescription(generationModeValue)}`;
 
         let instructions = '';
         if (gitRemoteUrl) {
           if (pushSuccess) {
-            instructions = `Successfully pushed ${currentCommit} commits to remote!\n\n${modeInfo}\n\nRepository: ${mockRepoPath}`;
+            instructions = `Successfully pushed ${totalCommits} commits to remote!\n\n${modeInfo}\n\nRepository: ${mockRepoPath}`;
           } else {
             instructions = `Commits created but push failed.\n\n${modeInfo}\n\nPlease push manually:\ncd "${mockRepoPath}"\ngit push -u origin main --force\n\nError: ${pushError}`;
           }
         } else {
-          instructions = `Created ${currentCommit} commits locally.\n\n${modeInfo}\n\nTo push to GitHub:\ncd "${mockRepoPath}"\ngit remote add origin YOUR_REPO_URL\ngit branch -M main\ngit push -u origin main --force`;
+          instructions = `Created ${totalCommits} commits locally.\n\n${modeInfo}\n\nTo push to GitHub:\ncd "${mockRepoPath}"\ngit remote add origin YOUR_REPO_URL\ngit push -u origin main --force`;
         }
 
         send({
           type: 'complete',
           data: {
             success: true,
-            totalCommits: currentCommit,
+            totalCommits,
             repoPath: mockRepoPath,
             generationMode: generationModeValue,
             pushSuccess,

@@ -65,6 +65,8 @@ export default function Generator() {
   const [gitRemoteUrl, setGitRemoteUrl] = useState('');
   const [authorName, setAuthorName] = useState('Dylan');
   const [authorEmail, setAuthorEmail] = useState('dylan@example.com');
+  const [pushMode, setPushMode] = useState<'remote' | 'branch'>('remote');
+  const [branchName, setBranchName] = useState('contributions');
 
   const handleGenerate = useCallback(async () => {
     const start = new Date(startDate);
@@ -134,10 +136,16 @@ export default function Generator() {
     setCommitProgress({ current: 0, total: 0, message: 'Starting...' });
 
     try {
-      const response = await fetch('/api/generate-commits', {
+      const apiUrl = pushMode === 'branch' ? '/api/generate-branch' : '/api/generate-commits';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify(pushMode === 'branch' ? {
+          contributions: contributions.map(c => ({ date: c.date.toISOString(), count: c.count })),
+          authorName,
+          authorEmail,
+          branchName,
+        } : {
           contributions: contributions.map(c => ({
             date: c.date.toISOString(),
             count: c.count,
@@ -403,6 +411,8 @@ export default function Generator() {
               authorName={authorName}
               authorEmail={authorEmail}
               generationMode={generationMode}
+              pushMode={pushMode}
+              branchName={branchName}
               onStartDateChange={setStartDate}
               onEndDateChange={setEndDate}
               onMinCommitsChange={setMinCommits}
@@ -412,6 +422,8 @@ export default function Generator() {
               onAuthorNameChange={setAuthorName}
               onAuthorEmailChange={setAuthorEmail}
               onGenerationModeChange={setGenerationMode}
+              onPushModeChange={setPushMode}
+              onBranchNameChange={setBranchName}
               onGenerate={handleGenerate}
               onCreateGitCommits={handleCreateGitCommits}
               isCreatingGitCommits={isCreatingGitCommits}

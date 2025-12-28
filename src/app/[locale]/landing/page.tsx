@@ -55,11 +55,12 @@ export default function Landing() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Background Gradients */}
+    <div className="min-h-screen bg-black relative overflow-hidden selection:bg-green-500/30">
+      {/* Background Gradients & Grid */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-[128px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] animate-pulse delay-1000" />
       </div>
 
       {/* Header */}
@@ -105,10 +106,10 @@ export default function Landing() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-tight tracking-tighter">
               打造你的完美
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-blue-500 animate-gradient-x bg-[length:200%_auto]">
                 GitHub 主页
               </span>
             </h1>
@@ -132,24 +133,36 @@ export default function Landing() {
             </div>
 
             {/* HELLO WORLD Demo */}
-            <Card className="max-w-5xl mx-auto bg-gray-950/50 border border-gray-800 p-8 mb-20 backdrop-blur-sm">
-              <div className="text-center mb-6">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 mb-2">
-                  HELLO WORLD
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+              <Card className="relative max-w-5xl mx-auto bg-[#0d1117] border border-gray-800 p-8 mb-20 backdrop-blur-sm shadow-2xl">
+                {/* Terminal Header */}
+                <div className="flex items-center gap-2 mb-6 border-b border-gray-800/50 pb-4">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                    <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                  </div>
+                  <div className="ml-4 text-xs text-gray-500 font-mono flex-1 text-center pr-16">
+                    contribution-graph-preview — -zsh
+                  </div>
                 </div>
-                <p className="text-sm text-gray-500">生成的贡献图案预览</p>
-              </div>
-              <div className="flex justify-center overflow-x-auto">
-                <ContributionGrid
-                  data={helloWorldData}
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </div>
-              <p className="text-center text-xs text-gray-600 mt-4">
-                仅供娱乐，真正的成就需要靠双手创造。
-              </p>
-            </Card>
+
+                <div className="text-center mb-8">
+                  <div className="text-4xl font-bold text-white mb-2 tracking-wider font-mono">
+                    HELLO WORLD
+                  </div>
+                  <p className="text-sm text-gray-500 font-mono">$ echo "Previewing contribution pattern..."</p>
+                </div>
+                <div className="flex justify-center overflow-x-auto pb-4">
+                  <ContributionGrid
+                    data={helloWorldData}
+                    startDate={startDate}
+                    endDate={endDate}
+                  />
+                </div>
+              </Card>
+            </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto mb-24">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Download, RefreshCw, Sparkles, Calendar, GitCommit, Clock, GitBranch, AlertCircle, ArrowRight, CheckCircle, Copy } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog';
@@ -67,6 +68,43 @@ export default function Generator() {
   const [authorEmail, setAuthorEmail] = useState('dylan@example.com');
   const [pushMode, setPushMode] = useState<'remote' | 'branch'>('remote');
   const [branchName, setBranchName] = useState('contributions');
+
+  // Load settings from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('mock-git-commits-settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.authorName) setAuthorName(parsed.authorName);
+        if (parsed.authorEmail) setAuthorEmail(parsed.authorEmail);
+        if (parsed.gitRepoName) setGitRepoName(parsed.gitRepoName);
+        if (parsed.gitRemoteUrl) setGitRemoteUrl(parsed.gitRemoteUrl);
+        if (parsed.pushMode) setPushMode(parsed.pushMode);
+        if (parsed.generationMode) setGenerationMode(parsed.generationMode);
+        if (parsed.minCommits !== undefined) setMinCommits(parsed.minCommits);
+        if (parsed.maxCommits !== undefined) setMaxCommits(parsed.maxCommits);
+        if (parsed.branchName) setBranchName(parsed.branchName);
+      } catch (e) {
+        console.error('Failed to load settings', e);
+      }
+    }
+  }, []);
+
+  // Save settings to localStorage
+  useEffect(() => {
+    const settings = {
+      authorName,
+      authorEmail,
+      gitRepoName,
+      gitRemoteUrl,
+      pushMode,
+      generationMode,
+      minCommits,
+      maxCommits,
+      branchName
+    };
+    localStorage.setItem('mock-git-commits-settings', JSON.stringify(settings));
+  }, [authorName, authorEmail, gitRepoName, gitRemoteUrl, pushMode, generationMode, minCommits, maxCommits, branchName]);
 
   const handleGenerate = useCallback(async () => {
     const start = new Date(startDate);
@@ -185,6 +223,11 @@ export default function Generator() {
                 });
               } else if (data.type === 'complete') {
                 const result = data.data;
+                confetti({
+                  particleCount: 100,
+                  spread: 70,
+                  origin: { y: 0.6 }
+                });
                 setResultDialog({
                   open: true,
                   success: true,

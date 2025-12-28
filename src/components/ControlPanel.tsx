@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Settings, GitPullRequest, RefreshCw, ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Settings, GitPullRequest, RefreshCw, ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader2, Calendar, Zap, Activity, Battery } from 'lucide-react';
 import { useTranslations, getCurrentLocale } from '@/lib/translations';
 
 interface ProgressState {
@@ -122,10 +123,56 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     return () => clearTimeout(timer);
   }, [gitRemoteUrl, validateUrl]);
 
+  // 快速日期选择
+  const setQuickDate = (type: 'thisYear' | 'lastYear' | 'last6Months') => {
+    const end = new Date();
+    const start = new Date();
+
+    if (type === 'thisYear') {
+      start.setMonth(0, 1);
+    } else if (type === 'lastYear') {
+      start.setFullYear(end.getFullYear() - 1, 0, 1);
+      end.setFullYear(end.getFullYear() - 1, 11, 31);
+    } else if (type === 'last6Months') {
+      start.setMonth(end.getMonth() - 6);
+    }
+
+    onStartDateChange(start.toISOString().split('T')[0]);
+    onEndDateChange(end.toISOString().split('T')[0]);
+  };
+
   return (
     <Card className="bg-black border-gray-800">
       <div className="p-4 space-y-4">
         <div className="space-y-3">
+          {/* Quick Date Selectors */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickDate('thisYear')}
+              className="flex-1 text-[10px] h-7 bg-gray-900 border-gray-800 hover:bg-gray-800 text-gray-300"
+            >
+              {currentLocale === 'zh' ? '今年' : 'This Year'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickDate('lastYear')}
+              className="flex-1 text-[10px] h-7 bg-gray-900 border-gray-800 hover:bg-gray-800 text-gray-300"
+            >
+              {currentLocale === 'zh' ? '去年' : 'Last Year'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickDate('last6Months')}
+              className="flex-1 text-[10px] h-7 bg-gray-900 border-gray-800 hover:bg-gray-800 text-gray-300"
+            >
+              {currentLocale === 'zh' ? '近6个月' : 'Last 6 Months'}
+            </Button>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">{t('settings.dateRange.startDate')}</Label>
@@ -147,27 +194,34 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-gray-500 mb-1 block">{t('settings.commitSettings.minCommits')}</Label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                value={minCommits}
-                onChange={(e) => onMinCommitsChange(parseInt(e.target.value) || 0)}
-                className="bg-gray-900 border-gray-800 text-white text-xs h-8"
+          <div className="space-y-4 pt-2">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="text-xs text-gray-500">{t('settings.commitSettings.minCommits')}</Label>
+                <span className="text-xs text-white font-mono bg-gray-800 px-2 py-0.5 rounded">{minCommits}</span>
+              </div>
+              <Slider
+                value={[minCommits]}
+                min={0}
+                max={50}
+                step={1}
+                onValueChange={(vals) => onMinCommitsChange(vals[0])}
+                className="py-1"
               />
             </div>
-            <div>
-              <Label className="text-xs text-gray-500 mb-1 block">{t('settings.commitSettings.maxCommits')}</Label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                value={maxCommits}
-                onChange={(e) => onMaxCommitsChange(parseInt(e.target.value) || 0)}
-                className="bg-gray-900 border-gray-800 text-white text-xs h-8"
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="text-xs text-gray-500">{t('settings.commitSettings.maxCommits')}</Label>
+                <span className="text-xs text-white font-mono bg-gray-800 px-2 py-0.5 rounded">{maxCommits}</span>
+              </div>
+              <Slider
+                value={[maxCommits]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(vals) => onMaxCommitsChange(vals[0])}
+                className="py-1"
               />
             </div>
           </div>
@@ -196,20 +250,30 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className="space-y-3 pt-3">
             <div className="space-y-2">
               <Label className="text-xs text-gray-500 block">{t('settings.generationMode.title')}</Label>
-              <div className="flex gap-1">
-                {(['conservative', 'normal', 'aggressive'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => onGenerationModeChange?.(mode)}
-                    className={`flex-1 px-2 py-1.5 text-[10px] rounded transition-all ${
-                      generationMode === mode
-                        ? 'bg-white text-black'
-                        : 'bg-gray-900 text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {t(`settings.generationMode.${mode}.title`)}
-                  </button>
-                ))}
+              <div className="grid grid-cols-3 gap-2">
+                {(['conservative', 'normal', 'aggressive'] as const).map((mode) => {
+                  const icons = {
+                    conservative: Battery,
+                    normal: Activity,
+                    aggressive: Zap
+                  };
+                  const Icon = icons[mode];
+                  
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => onGenerationModeChange?.(mode)}
+                      className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg border transition-all ${
+                        generationMode === mode
+                          ? 'bg-white text-black border-white'
+                          : 'bg-gray-900 text-gray-400 border-gray-800 hover:border-gray-700 hover:text-gray-300'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="text-[10px] font-medium">{t(`settings.generationMode.${mode}.title`)}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
